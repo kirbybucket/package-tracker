@@ -24,7 +24,8 @@ class UI:
         print(f"{Fore.CYAN}{'-' * 50}{Style.RESET_ALL}")
         print(f"{Fore.GREEN}1.{Style.RESET_ALL} Cambiar número telefónico")
         print(f"{Fore.GREEN}2.{Style.RESET_ALL} Gestionar notificaciones WhatsApp")
-        print(f"{Fore.GREEN}3.{Style.RESET_ALL} Volver al menú principal")
+        print(f"{Fore.GREEN}3.{Style.RESET_ALL} Configurar intervalo de verificación")
+        print(f"{Fore.GREEN}4.{Style.RESET_ALL} Volver al menú principal")
         print(f"{Fore.CYAN}{'-' * 50}{Style.RESET_ALL}")
         
         return input(f"{Fore.YELLOW}Selecciona una opción: {Style.RESET_ALL}")
@@ -48,5 +49,6 @@ class UI:
         print(f"{'='*60}{Style.RESET_ALL}")
         print(f"{Fore.GREEN}▪ Número de notificaciones: {config.TELEFONO_DESTINO}")
         print(f"▪ Paquetes registrados: {len(config.PACKAGE_IDS)}")
-        print(f"▪ Estado notificaciones: {'ACTIVADAS' if config.NOTIFICACIONES_WHATSAPP else 'DESACTIVADAS'}{Style.RESET_ALL}")
+        print(f"▪ Estado notificaciones: {'ACTIVADAS' if config.NOTIFICACIONES_WHATSAPP else 'DESACTIVADAS'}")
+        print(f"▪ Intervalo entre verificaciones: {config.INTERVALO_MINUTOS} minutos{Style.RESET_ALL}")
         print(f"{Fore.CYAN}{'='*60}{Style.RESET_ALL}")

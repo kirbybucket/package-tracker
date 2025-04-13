@@ -37,6 +37,7 @@ class PackageTracker:
         nuevos_datos = {f'step{i}': True for i in range(1, 11)}
         
         print(f"\n{Fore.GREEN}🔍 Iniciando seguimiento automático de {len(urls)} paquetes{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}⏱️ Intervalo entre verificaciones: {config.INTERVALO_MINUTOS} minutos{Style.RESET_ALL}")
         print(f"{Fore.YELLOW}Presiona Ctrl+C para detener{Style.RESET_ALL}")
         
         intentos = 0
@@ -66,10 +67,10 @@ class PackageTracker:
                 else:
                     print(f"{Fore.BLUE}El paquete '{nombre}' aún no ha llegado{Style.RESET_ALL}")
             
-            # Esperar antes del próximo intento
-            espera_minutos = 15
-            print(f"\n{Fore.YELLOW}Esperando {espera_minutos} minutos para el próximo intento...{Style.RESET_ALL}")
-            time.sleep(espera_minutos * 60)
+            # Esperar antes del próximo intento - USADO EL VALOR CONFIGURABLE
+            tiempo_espera = max(3, config.INTERVALO_MINUTOS)  # Mínimo 3 minutos
+            print(f"\n{Fore.YELLOW}Esperando {tiempo_espera} minutos para el próximo intento...{Style.RESET_ALL}")
+            time.sleep(tiempo_espera * 60)
             intentos += 1
     
     @staticmethod

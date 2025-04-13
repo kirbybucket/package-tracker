@@ -1,4 +1,5 @@
 import os
+import sys
 import firebase_admin
 from firebase_admin import credentials, firestore
 import colorama
@@ -6,6 +7,25 @@ from colorama import Fore, Style
 
 # Inicialización de colorama
 colorama.init()
+
+def get_credentials_path():
+    """Obtiene la ruta al archivo de credenciales de Firebase"""
+    # Lista de posibles ubicaciones para buscar las credenciales
+    possible_paths = [
+        # 1. En el mismo directorio que el ejecutable (para el .exe)
+        os.path.join(os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else __file__), 
+                    "firebase-creds.json"),
+        # 2. En el directorio raíz del proyecto (para desarrollo)
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "firebase-creds.json")
+    ]
+    
+    # Buscar el archivo en las ubicaciones posibles
+    for path in possible_paths:
+        if os.path.exists(path):
+            return path
+    
+    # Si no se encuentra, devolver None
+    return None
 
 def inicializar_firebase():
     """Inicializa la conexión con Firebase si no está ya inicializada"""
@@ -15,12 +35,12 @@ def inicializar_firebase():
     except ValueError:
         # Si no está inicializado, inicializarlo
         try:
-            # Busca el archivo de credenciales en la raíz del proyecto
-            cred_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "firebase-creds.json")
+            # Busca el archivo de credenciales
+            cred_path = get_credentials_path()
             
-            if not os.path.exists(cred_path):
+            if not cred_path:
                 print(f"{Fore.RED}❌ Error: No se encuentra el archivo de credenciales de Firebase{Style.RESET_ALL}")
-                print(f"{Fore.YELLOW}Por favor, coloca 'firebase-creds.json' en la carpeta raíz del proyecto{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}Por favor, coloca 'firebase-creds.json' en la misma carpeta que el ejecutable.{Style.RESET_ALL}")
                 return None
             
             # Inicializar con credenciales

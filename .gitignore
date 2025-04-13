@@ -23,6 +23,8 @@ var/
 # Configuraciones sensibles
 firebase-creds.json
 .env
+config.py
+PyWhatKit_DB.txt
 
 # Entornos virtuales
 venv/

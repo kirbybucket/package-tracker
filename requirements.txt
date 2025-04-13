@@ -1,0 +1,11 @@
+# Dependencias principales
+pywhatkit==5.4
+colorama==0.4.6
+tenacity==8.2.3
+requests==2.31.0
+firebase-admin==6.3.0
+python-dotenv==1.0.0
+
+# Dependencias de desarrollo (opcionales)
+pytest==7.4.0
+black==23.7.0

@@ -23,8 +23,12 @@ var/
 # Configuraciones sensibles
 firebase-creds.json
 .env
+<<<<<<< Updated upstream
+=======
 config.py
+config.json
 PyWhatKit_DB.txt
+>>>>>>> Stashed changes
 
 # Entornos virtuales
 venv/

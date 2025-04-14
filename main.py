@@ -15,7 +15,7 @@ os.system('cls' if os.name == 'nt' else 'clear')
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Importar módulos propios
-from core.config_manager import ConfigManager
+from core.config_handler import ConfigHandler
 from core.tracker import PackageTracker
 from core.messenger import MessageSender
 from utils.ui import UI
@@ -27,6 +27,22 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
+
+# Función para verificar credenciales
+def verificar_credenciales():
+    """Verifica que el archivo de credenciales exista"""
+    from firestore.create_collection import get_credentials_path
+    
+    cred_path = get_credentials_path()
+    if not cred_path:
+        print(f"\n{Fore.RED}{'=' * 60}")
+        print(f"{Fore.RED}❌ ERROR: No se encontró el archivo firebase-creds.json{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Por favor, coloca el archivo 'firebase-creds.json' en la misma carpeta")
+        print(f"que el ejecutable de Package Tracker.{Style.RESET_ALL}")
+        print(f"{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
+        input(f"\n{Fore.YELLOW}Presiona Enter para salir...{Style.RESET_ALL}")
+        sys.exit(1)
+    return True
 
 # Función para gestionar la agregar paquetes
 def agregar_paquete(config):
@@ -49,7 +65,7 @@ def agregar_paquete(config):
         paquetes_actualizados[nombre] = package_id
         
         # Actualizar configuración
-        config = ConfigManager.actualizar_configuracion(config, PACKAGE_IDS=paquetes_actualizados)
+        config = ConfigHandler.update_config(config, PACKAGE_IDS=paquetes_actualizados)
         print(f"{Fore.GREEN}✅ Paquete agregado correctamente{Style.RESET_ALL}")
         
         # Crear en Firestore
@@ -95,7 +111,7 @@ def eliminar_paquete(config):
     nuevos_paquetes = {k:v for k,v in config.PACKAGE_IDS.items() if v != package_id}
     
     # Actualizar configuración
-    config = ConfigManager.actualizar_configuracion(config, PACKAGE_IDS=nuevos_paquetes)
+    config = ConfigHandler.update_config(config, PACKAGE_IDS=nuevos_paquetes)
     
     # Eliminar de Firestore
     try:
@@ -117,7 +133,7 @@ def cambiar_numero_telefonico(config):
         return config
     
     # Actualizar configuración
-    config = ConfigManager.actualizar_configuracion(config, TELEFONO_DESTINO=nuevo_numero)
+    config = ConfigHandler.update_config(config, TELEFONO_DESTINO=nuevo_numero)
     print(f"{Fore.GREEN}✅ Número actualizado correctamente{Style.RESET_ALL}")
     print(f"{Fore.YELLOW}ℹ️ Los cambios surtirán efecto en el próximo seguimiento{Style.RESET_ALL}")
     
@@ -143,34 +159,55 @@ def gestionar_notificaciones(config):
         return config
     
     # Actualizar configuración
-    config = ConfigManager.actualizar_configuracion(config, NOTIFICACIONES_WHATSAPP=nuevo_estado)
+    config = ConfigHandler.update_config(config, NOTIFICACIONES_WHATSAPP=nuevo_estado)
     print(f"{Fore.GREEN}✅ Notificaciones {'activadas' if nuevo_estado else 'desactivadas'}{Style.RESET_ALL}")
+    
+    return config
+
+# Añadir esta función después de gestionar_notificaciones
+
+def configurar_intervalo(config):
+    """Permite al usuario configurar el intervalo entre verificaciones"""
+    INTERVALO_MINIMO = 3  # Mínimo 3 minutos para evitar sobrecarga
+    
+    print(f"\n{Fore.CYAN}⏱️ Configuración de intervalo entre verificaciones{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Intervalo actual: {config.INTERVALO_MINUTOS} minutos{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Nota: El intervalo mínimo permitido es de {INTERVALO_MINIMO} minutos{Style.RESET_ALL}")
+    
+    try:
+        nuevo_intervalo = int(input(f"{Fore.CYAN}Nuevo intervalo en minutos: {Style.RESET_ALL}"))
+        
+        if nuevo_intervalo < INTERVALO_MINIMO:
+            print(f"{Fore.RED}❌ El intervalo no puede ser menor a {INTERVALO_MINIMO} minutos{Style.RESET_ALL}")
+            return config
+        
+        # Actualizar configuración
+        config = ConfigHandler.update_config(config, INTERVALO_MINUTOS=nuevo_intervalo)
+        print(f"{Fore.GREEN}✅ Intervalo actualizado a {nuevo_intervalo} minutos{Style.RESET_ALL}")
+    
+    except ValueError:
+        print(f"{Fore.RED}❌ Valor inválido. Debe ser un número entero.{Style.RESET_ALL}")
     
     return config
 
 # Función principal
 def main():
     """Función principal del programa"""
+    # Verificar credenciales de Firebase
+    verificar_credenciales()
+    
     # Crear colección inicial
     create_collection.crear_coleccion_paquetes()
     
-    # Importar configuración
-    try:
-        import config
-        importlib.reload(config)
-    except ImportError:
-        print(f"{Fore.YELLOW}No se encontró archivo de configuración. Creando uno nuevo...{Style.RESET_ALL}")
-        ConfigManager.crear_configuracion()
-        import config
-    
-    # Verificar configuración
-    if not ConfigManager.validar_configuracion(config):
-        ConfigManager.crear_configuracion()
-        return
+    # Cargar configuración
+    config = ConfigHandler.load_config()
+    if not config.TELEFONO_DESTINO:
+        print(f"{Fore.YELLOW}No se encontró configuración. Creando una nueva...{Style.RESET_ALL}")
+        config = ConfigHandler.create_interactive_config()
 
     # Bucle principal con recarga dinámica
     while True:
-        importlib.reload(config)  # Recarga en cada iteración
+        config = ConfigHandler.load_config()  # Recarga en cada iteración
         
         # Mostrar cabecera
         UI.mostrar_cabecera(config)
@@ -193,7 +230,7 @@ def main():
                     print(f"{Fore.RED}❌ Opción inválida{Style.RESET_ALL}")
                 
                 input(f"\n{Fore.YELLOW}Presiona Enter para continuar...{Style.RESET_ALL}")
-                importlib.reload(config)  # Recarga inmediata tras cambios
+                config = ConfigHandler.load_config()  # Recarga inmediata tras cambios
 
         # 2. Ver estado de paquetes
         elif opcion == "2":
@@ -230,8 +267,12 @@ def main():
                 elif sub_opcion == "2":
                     config = gestionar_notificaciones(config)
                 
-                # 4.3 Volver al menú principal
+                # 4.3 Configurar intervalo
                 elif sub_opcion == "3":
+                    config = configurar_intervalo(config)
+                
+                # 4.4 Volver al menú principal
+                elif sub_opcion == "4":
                     break
                 
                 else:

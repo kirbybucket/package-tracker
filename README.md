@@ -9,6 +9,7 @@ Sistema de seguimiento de paquetes hacia Bolivia con notificaciones WhatsApp en 
 - ✅ Gestión de paquetes desde interfaz de consola interactiva
 - ✅ Almacenamiento de historial en Firestore
 - ✅ Configuración personalizable
+- ✅ Intervalo configurable entre verificaciones
 - ✅ Interfaz intuitiva con códigos de colores
 
 ## 📋 Requisitos previos
@@ -22,7 +23,7 @@ Sistema de seguimiento de paquetes hacia Bolivia con notificaciones WhatsApp en 
 
 1. Clona este repositorio:
    ```bash
-   git clone https://github.com/kirbybucket/package-tracker.git
+   git clone https://github.com/tu-usuario/package-tracker.git
    cd package-tracker
    ```
 
@@ -31,7 +32,7 @@ Sistema de seguimiento de paquetes hacia Bolivia con notificaciones WhatsApp en 
    pip install -r requirements.txt
    ```
 
-3. Coloca tu archivo firebase-creds.json en la carpeta raíz del proyecto
+3. Coloca tu archivo `firebase-creds.json` en la carpeta raíz del proyecto
 
 4. Ejecuta el programa por primera vez para crear la configuración:
    ```bash
@@ -40,27 +41,21 @@ Sistema de seguimiento de paquetes hacia Bolivia con notificaciones WhatsApp en 
 
 ## ⚙️ Configuración
 
-El archivo de configuración config.py se generará automáticamente en el primer inicio. También puedes crear uno manualmente basado en config_example.py:
+La configuración se almacena en un archivo JSON que se crea automáticamente en el primer inicio:
 
-```python
-import os
+- **Número de teléfono**: Formato internacional `+591XXXXXXXX` para recibir notificaciones
+- **Paquetes a rastrear**: Lista de paquetes con nombres descriptivos e IDs de seguimiento
+- **Notificaciones WhatsApp**: Activar/desactivar notificaciones
+- **Intervalo de verificación**: Tiempo entre verificaciones (mínimo 3 minutos)
 
-# Número de teléfono para recibir notificaciones
-TELEFONO_DESTINO = "+591XXXXXXXX"
+La configuración se puede modificar desde la interfaz del programa en la opción "Configuración avanzada".
 
-# Paquetes a rastrear (formato: "nombre_descriptivo": "ID_SEGUIMIENTO")
-PACKAGE_IDS = {
-    "mi_paquete": "RP123456789MU",
-    # Agrega más paquetes aquí
-}
+### Uso con el ejecutable (.exe)
 
-# Activar/desactivar notificaciones WhatsApp
-NOTIFICACIONES_WHATSAPP = True
+Si estás utilizando la versión ejecutable:
 
-# Configuración avanzada (no modificar)
-FIREBASE_CREDS = os.path.join(os.path.dirname(__file__), "firebase-creds.json")
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-```
+1. Coloca el archivo `firebase-creds.json` en la misma carpeta que el ejecutable
+2. El archivo de configuración `config.json` se creará automáticamente en la misma carpeta
 
 ## 🖥️ Uso
 
@@ -73,7 +68,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
    - Gestionar paquetes (agregar/eliminar)
    - Ver estado de paquetes
    - Iniciar seguimiento automático
-   - Configuración avanzada
+   - Configuración avanzada (número de teléfono, notificaciones, intervalo)
 
 3. Para el seguimiento automático, el programa verificará periódicamente el estado de tus paquetes y enviará notificaciones vía WhatsApp cuando lleguen.
 
@@ -82,7 +77,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ```
 package-tracker/
 ├── core/                 # Funcionalidad principal
-│   ├── config_manager.py # Gestión de configuración
+│   ├── config_handler.py # Gestión de configuración JSON
 │   ├── messenger.py      # Envío de notificaciones
 │   └── tracker.py        # Seguimiento de paquetes
 ├── firestore/            # Integración con Firebase
@@ -91,15 +86,14 @@ package-tracker/
 ├── utils/                # Utilidades
 │   ├── helpers.py        # Funciones auxiliares
 │   └── ui.py             # Interfaz de usuario
-├── config_example.py     # Ejemplo de configuración
 ├── main.py               # Punto de entrada
 └── requirements.txt      # Dependencias
 ```
 
 ## 🔐 Seguridad
 
-- El archivo firebase-creds.json contiene credenciales sensibles y está incluido en .gitignore
-- No compartas tu configuración (`config.py`) ya que contiene tu número telefónico personal
+- El archivo `firebase-creds.json` contiene credenciales sensibles y está incluido en `.gitignore`
+- No compartas tu configuración (`config.json`) ya que contiene tu número telefónico personal
 
 ## 🤝 Contribución
 
@@ -114,6 +108,7 @@ package-tracker/
 - **WhatsApp no envía mensajes**: Asegúrate de tener WhatsApp Web configurado y autenticado
 - **Error de Firebase**: Verifica que tu archivo de credenciales sea válido y esté en la ubicación correcta
 - **ID de paquete no reconocido**: Los IDs deben seguir el formato `RP` + 11 dígitos + `MU`
+- **Ejecutable no encuentra credenciales**: Coloca `firebase-creds.json` en la misma carpeta que el .exe
 
 ---
 
